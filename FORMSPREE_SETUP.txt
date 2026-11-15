@@ -1,0 +1,39 @@
+CEILAO ENTERPRISES WEBSITE — DEPLOYMENT & ENQUIRIES
+
+Website type: static HTML, CSS and JavaScript (no npm packages or build step).
+Upload the CONTENTS of this ZIP to the website's document root using FTP.
+Keep the assets/ folder and all HTML files in their supplied relative positions.
+
+SITE NAVIGATION
+"Buy Tickets" appears directly beside "Let's Talk" in the desktop header
+and next to it in the mobile navigation action group. The ticket desk lives
+at tickets.html. Ticket purchases use the authorised BookMyShow website;
+this static site does not accept or process payments.
+
+ENQUIRY FORM / FORMSPREE
+Endpoint: https://formspree.io/f/mljjwrow
+All seven HTML pages have the same enquiry form and submit directly to Formspree
+using POST. Formspree handles confirmation and any required spam challenge.
+The local thank-you.html page is retained but is NOT the active form redirect.
+
+Before launch, verify in the Formspree dashboard that submissions notify
+ events@ceilao.com.au; complete any requested address verification. Then send
+one real test enquiry from the deployed domain and check the Formspree inbox
+and destination mailbox, including spam. Live form delivery was NOT tested.
+If the hosting provider configures Content-Security-Policy, it must allow
+https://formspree.io in the form-action directive.
+
+QA PERFORMED ON THIS BUILD
+- Local page and asset references, IDs, internal anchor targets, metadata,
+  external-link safety attributes, structured-data JSON and enquiry form markup
+- JavaScript syntax and stylesheet parsing
+- Desktop/mobile layout checks for all seven pages, mobile navigation,
+  enquiry modal opening/closing, ticket CTA placement, press release filter
+- Identified and corrected two narrow-screen text-overflow issues
+- Removed one unused legacy PNG and two empty template marker files
+
+LIMITATION
+This is an offline source/build check. Hosting configuration, real-world
+contact-form delivery, live purchase completion, performance and server-side
+security headers must be verified after upload. No payment data is collected
+by this website.
