@@ -23,3 +23,7 @@ LINK NOTES
   different from the event agenda, so it has not been published verbatim.
 - Internal working documents and the full 28-page newspaper issue were
   intentionally excluded from the public website export.
+
+VIDEO UPDATE (16 November 2026)
+- Added Once Upon a Christmas teaser video (assets/video/) to events.html,
+  below the Next on the Stage feature. Upload the assets/video folder too.
