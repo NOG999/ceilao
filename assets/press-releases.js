@@ -18,6 +18,8 @@
     const val = path.trim();
     // Keep assets local and prevent javascript:, data:, protocol-relative and traversal URLs.
     if (val.startsWith('assets/press/') && !val.includes('..') && !/[?#]/.test(val) && !val.includes('\\') && /^assets\/press\/[a-zA-Z0-9_./-]+$/.test(val)) return val;
+    if (val === 'press-conference.html') return val;
+    if (val.startsWith('assets/events/') && /^assets\/events\/[a-zA-Z0-9_.-]+\.(webp|png|jpg)$/.test(val)) return val;
     if (val.startsWith('press/articles/') && !val.includes('..') && !/[?#]/.test(val) && !val.includes('\\') && /^press\/articles\/[a-zA-Z0-9_./-]+\.html$/.test(val)) return val;
     return null;
   };
@@ -37,21 +39,24 @@
     .map(x => ({
       title:x.title.trim().slice(0,180),
       date:x.date,
+      dateLabel:typeof x.dateLabel==='string' ? x.dateLabel.trim().slice(0,30) : '',
       category: categories.has(x.category) ? x.category : 'Other',
       summary: typeof x.summary==='string' ? x.summary.trim().slice(0,600) : '',
       image:localPath(x.image),
-      href:localPath(x.pdf) || localPath(x.html) || safeExternalUrl(x.url),
-      pdf:Boolean(localPath(x.pdf)),
-      external:!localPath(x.pdf) && !localPath(x.html) && Boolean(safeExternalUrl(x.url)),
+      href:localPath(x.html) || safeExternalUrl(x.url) || localPath(x.pdf),
+      pdf:localPath(x.pdf),
+      external:!localPath(x.html) && Boolean(safeExternalUrl(x.url)),
+      sourceUrl:safeExternalUrl(x.sourceUrl),
+      featured:Boolean(x.featured),
       publisher:typeof x.publisher==='string' ? x.publisher.trim().slice(0,100) : '',
-      alt:typeof x.alt==='string' ? x.alt.trim().slice(0,200) : '', 
-    })).sort((a,b)=>b.date.localeCompare(a.date));
+      alt:typeof x.alt==='string' ? x.alt.trim().slice(0,200) : '',
+        })).sort((a,b)=>b.date.localeCompare(a.date));
   const el=(tag, className, text)=>{ const n=document.createElement(tag);if(className)n.className=className;if(text!==undefined)n.textContent=text;return n; };
   const years=[...new Set(items.map(x=>x.date.slice(0,4)))];
   years.forEach(y=>{ const option=document.createElement('option');option.value=y;option.textContent=y;year.append(option); });
   function makeCard(x,index){
     const card=el('article','press-card');
-    if (x.category === 'Media Coverage') card.classList.add('press-card--coverage');
+    if (x.featured) card.classList.add('press-card--coverage');
     const art=el('a','press-card-image');
     art.href=x.href;art.target='_blank';art.rel='noopener noreferrer';art.setAttribute('aria-label',`Read ${x.title}`);
     if(x.image){
@@ -64,15 +69,17 @@
     }
     const body=el('div','press-card-body');
     const kicker=el('p','press-card-kicker');
-    const date=document.createElement('time');date.dateTime=x.date;date.textContent=new Intl.DateTimeFormat('en-AU',{day:'2-digit',month:'short',year:'numeric',timeZone:'UTC'}).format(new Date(`${x.date}T12:00:00Z`)).toUpperCase();
+    const date=document.createElement('time');if(!x.dateLabel)date.dateTime=x.date;date.textContent=x.dateLabel || new Intl.DateTimeFormat('en-AU',{day:'2-digit',month:'short',year:'numeric',timeZone:'UTC'}).format(new Date(`${x.date}T12:00:00Z`)).toUpperCase();
     kicker.append(date,el('span','',' / '),el('span','',x.category.toUpperCase()));
     if(x.publisher) kicker.append(el('span','',' / '),el('span','',x.publisher.toUpperCase()));
     const heading=el('h3','press-card-title');const title=el('a','',x.title);title.href=x.href;title.target='_blank';title.rel='noopener noreferrer';heading.append(title);
     body.append(kicker,heading);
     if(x.summary)body.append(el('p','press-card-summary',x.summary));
-    const read=el('a','press-card-read',x.external?'READ FULL ARTICLE ↗':x.pdf?'VIEW PRESS RELEASE ↗':'READ RELEASE ↗');read.href=x.href;read.target='_blank';read.rel='noopener noreferrer';
-    if(x.pdf)read.setAttribute('aria-label',`Open PDF: ${x.title}`);
+    const read=el('a','press-card-read',x.external?'READ PUBLISHER ARTICLE ↗':x.pdf?'VIEW SUPPLIED CLIPPING ↗':'VIEW PRESS CONFERENCE ↗');read.href=x.href;read.target='_blank';read.rel='noopener noreferrer';
+    if(x.pdf && !x.external)read.setAttribute('aria-label',`Open supplied clipping: ${x.title}`);
     body.append(read);
+    if(x.pdf && x.external){const clip=el('a','press-card-read press-card-read--secondary','VIEW SUPPLIED CLIPPING ↗');clip.href=x.pdf;clip.target='_blank';clip.rel='noopener noreferrer';body.append(clip);}
+    if(x.sourceUrl){const source=el('a','press-card-read press-card-read--secondary','ORIGINAL SOCIAL / PUBLISHER LINK ↗');source.href=x.sourceUrl;source.target='_blank';source.rel='noopener noreferrer';body.append(source);}
     card.append(art,body);return card;
   }
   const filter=()=>{
